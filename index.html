@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Подбор терапии АГ</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-page="index">
+  <main class="container">
+    <header class="hero card">
+      <h1>Система помощи принятия решений при выборе терапии АГ</h1>
+      <p>Демонстрационный rule-based прототип для GitHub Pages. Решение не заменяет клиническое мышление и финальную врачебную оценку.</p>
+    </header>
+
+    <section class="card">
+      <h2>1. Основная информация</h2>
+      <div class="grid two">
+        <label>Возраст
+          <input id="age" type="number" min="18" max="120" placeholder="Например, 57" />
+        </label>
+        <div>
+          <span class="label">Пол</span>
+          <div class="inline-options">
+            <label><input type="radio" name="sex" id="sex-male" value="male" checked /> Мужской</label>
+            <label><input type="radio" name="sex" id="sex-female" value="female" /> Женский</label>
+          </div>
+        </div>
+        <label>САД
+          <input id="sbp" type="number" min="60" max="300" placeholder="Например, 160" />
+        </label>
+        <label>ДАД
+          <input id="dbp" type="number" min="30" max="200" placeholder="Например, 100" />
+        </label>
+      </div>
+      <p id="bp-category-output" class="info-note">Степень/категория АД будет определена автоматически</p>
+    </section>
+
+    <section class="card">
+      <h2>2. Диагноз</h2>
+      <div class="grid two">
+        <label>Стадия
+          <select id="stage-mode">
+            <option value="manual">Выбрать вручную</option>
+            <option value="auto">Определить</option>
+          </select>
+        </label>
+        <label>Выбранная стадия
+          <select id="stage-manual">
+            <option value="I">Стадия I</option>
+            <option value="II">Стадия II</option>
+            <option value="III">Стадия III</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="stage-calc-block" class="subcard" hidden>
+        <h3>Определение стадии</h3>
+        <div class="three-col">
+          <div>
+            <h4>Факторы риска</h4>
+            <label id="rf-sex-auto" hidden><input id="rf-sex-auto-cb" type="checkbox" name="stageRiskFactor" value="sexRisk" checked disabled /> Пол</label>
+            <label id="rf-age-auto" hidden><input id="rf-age-auto-cb" type="checkbox" name="stageRiskFactor" value="ageRisk" checked disabled /> Возраст</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="smoking" /> Курение</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="dyslipidemia" /> Дислипидемия</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="uric" /> Мочевая кислота ≥360 мкмоль/л</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="fasting" /> Нарушение гликемии натощак</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="glucoseTol" /> Нарушение толерантности к глюкозе</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="obesity" /> Избыточная масса тела или ожирение</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="abdObesity" /> Абдоминальное ожирение</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="familyCvd" /> Отягощенный семейный анамнез по ССЗ</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="youngHTN" /> АГ в молодом возрасте в семье</label>
+            <label id="rf-early-menopause-wrap" hidden><input type="checkbox" name="stageRiskFactor" value="menopause" /> Ранняя менопауза</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="sedentary" /> Малоподвижный образ жизни</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="psycho" /> Психологические / социально-экономические факторы</label>
+            <label><input type="checkbox" name="stageRiskFactor" value="pulse" /> ЧСС более 80 ударов в минуту</label>
+          </div>
+          <div>
+            <h4>Сопутствующие состояния и ПОМ</h4>
+            <label><input id="stage-diabetes" type="checkbox" /> Сахарный диабет</label>
+            <label>ХБП
+              <select id="stage-ckd">
+                <option value="none">Отсутствует</option>
+                <option value="c3">С3</option>
+                <option value="c4">С4</option>
+                <option value="c5">С5</option>
+              </select>
+            </label>
+            <label><input type="checkbox" name="stageOrgan" value="pulsePressure" /> Пульсовое давление ≥ 60 мм рт. ст.</label>
+            <label><input type="checkbox" name="stageOrgan" value="pwv" /> Каротидно-феморальная скорость пульсовой волны > 10 м/с</label>
+            <label><input type="checkbox" name="stageOrgan" value="ecgLvh" /> ЭКГ-признаки ГЛЖ</label>
+            <label><input type="checkbox" name="stageOrgan" value="echoLvh" /> ЭхоКГ-признаки ГЛЖ</label>
+            <label><input type="checkbox" name="stageOrgan" value="albuminuria" /> Альбуминурия 30–300 мг/24 ч</label>
+            <label><input type="checkbox" name="stageOrgan" value="abi" /> Лодыжечно-плечевой индекс &lt; 0,9</label>
+            <label><input type="checkbox" name="stageOrgan" value="retinopathy" /> Выраженная ретинопатия</label>
+          </div>
+          <div>
+            <h4>Ассоциированные клинические состояния</h4>
+            <label><input type="checkbox" name="stageAssoc" value="cerebrovascular" /> Цереброваскулярные заболевания</label>
+            <label><input type="checkbox" name="stageAssoc" value="ihd" /> ИБС / ИМ / стенокардия / реваскуляризация</label>
+            <label><input type="checkbox" name="stageAssoc" value="plaques" /> Бляшки при визуализации, стеноз ≥50%</label>
+            <label><input type="checkbox" name="stageAssoc" value="hf" /> Сердечная недостаточность</label>
+            <label><input type="checkbox" name="stageAssoc" value="pad" /> Заболевание периферических артерий</label>
+            <label><input type="checkbox" name="stageAssoc" value="af" /> Фибрилляция предсердий</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid two top-gap">
+        <label>Риск
+          <select id="risk-mode">
+            <option value="manual">Выбрать вручную</option>
+            <option value="auto">Определить</option>
+          </select>
+        </label>
+        <label>Выбранный риск
+          <select id="risk-manual">
+            <option value="низкий">Низкий</option>
+            <option value="умеренный">Умеренный</option>
+            <option value="высокий">Высокий</option>
+            <option value="очень высокий">Очень высокий</option>
+            <option value="экстремальный">Экстремальный</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="risk-calc-block" class="subcard" hidden>
+        <div class="switcher">
+          <label><input type="radio" name="riskAutoMethod" value="score2" checked /> Рассчитать по SCORE2</label>
+          <label><input type="radio" name="riskAutoMethod" value="clinical" /> Клинический расчет</label>
+        </div>
+
+        <div id="score2-block">
+          <div class="score2-preview">
+            <img id="score2-image" alt="SCORE2" />
+            <p id="score2-caption"></p>
+          </div>
+          <label>Введите значение SCORE2
+            <input id="score2-value" type="number" min="0" max="100" step="0.1" placeholder="Например, 4.5" />
+          </label>
+        </div>
+
+        <div id="clinical-risk-block" hidden>
+          <h3>Клинический расчет риска</h3>
+          <label><input id="cr-dm" type="checkbox" /> СД</label>
+          <div id="cr-dm-sub" class="nested" hidden>
+            <label>Тип СД
+              <select id="cr-dm-type">
+                <option value="type1">1 тип</option>
+                <option value="type2">2 тип</option>
+              </select>
+            </label>
+            <label>Стаж заболевания
+              <input id="cr-dm-duration" type="number" min="0" max="80" />
+            </label>
+            <label><input id="cr-dm-tod" type="checkbox" /> Поражение органов-мишеней</label>
+          </div>
+          <label><input id="cr-ckd" type="checkbox" /> ХБП</label>
+          <div id="cr-ckd-sub" class="nested" hidden>
+            <label><input type="radio" name="crCkdLevel" id="cr-ckd-mod-radio" onclick="document.getElementById('cr-ckd-level').value='moderate'" checked /> Умеренная (СКФ 30–59)</label>
+            <label><input type="radio" name="crCkdLevel" id="cr-ckd-sev-radio" onclick="document.getElementById('cr-ckd-level').value='severe'" /> Выраженная (СКФ &lt;30)</label>
+            <input type="hidden" id="cr-ckd-level" value="moderate" />
+          </div>
+          <label><input id="cr-familial" type="checkbox" /> Семейная гиперхолестеринемия без факторов риска</label>
+          <label><input id="cr-major-risk" type="checkbox" /> Значимо выраженные факторы риска</label>
+          <div id="cr-major-sub" class="nested" hidden>
+            <label><input id="cr-major-chol" type="checkbox" /> ХС&gt;8 ммоль/л и/или ХС ЛНП&gt;4,9 ммоль/л</label>
+            <label><input id="cr-major-bp" type="checkbox" /> АД ≥180/110 мм рт. ст.</label>
+            <label><input id="cr-major-3rf" type="checkbox" /> Сочетание более 3 факторов риска</label>
+          </div>
+          <label><input id="cr-documented" type="checkbox" /> Документированное атеросклеротическое ССЗ</label>
+          <label><input id="cr-imaging" type="checkbox" /> Бесспорно документированное ССЗ по визуализации, стеноз ≥50%</label>
+          <label><input id="cr-extreme" type="checkbox" /> Экстремальный сценарий: клинически значимое атеросклеротическое ССЗ / ≥2 событий за 2 года</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3. Дополнительная информация</h2>
+      <div class="three-col">
+        <div>
+          <h3>Сопутствующие состояния</h3>
+          <label><input id="extra-dm" type="checkbox" /> СД</label>
+          <label><input id="extra-ckd" type="checkbox" /> ХБП</label>
+          <div id="extra-ckd-sub" class="nested" hidden>
+            <label><input type="radio" name="extraCkdOption" value="c1_3_gte30" /> ХБП С1–3, СКФ 30 и более</label>
+            <label><input type="radio" name="extraCkdOption" value="c4_5_lt30" /> ХБП С4–5, СКФ менее 30</label>
+          </div>
+          <label><input id="extra-ihd" type="checkbox" /> ИБС</label>
+          <div id="extra-ihd-sub" class="nested" hidden>
+            <label><input type="radio" name="extraIhdOption" value="angina_yes" /> Стенокардия есть</label>
+            <label><input type="radio" name="extraIhdOption" value="angina_no" /> Стенокардия отсутствует</label>
+          </div>
+          <label><input id="extra-hf" type="checkbox" /> ГЛЖ и СН</label>
+          <div id="extra-hf-sub" class="nested" hidden>
+            <label><input type="radio" name="extraHfOption" value="hfrEF" /> ХСНнФВ</label>
+            <label><input type="radio" name="extraHfOption" value="hfmrEF" /> ХСНунФВ</label>
+            <label><input type="radio" name="extraHfOption" value="hfPEF" /> ХСНсФВ</label>
+          </div>
+          <label><input id="extra-af" type="checkbox" /> ФП и другие аритмии</label>
+          <div id="extra-af-sub" class="nested" hidden>
+            <label><input type="radio" name="extraAfOption" value="hr_ge_80" /> ЧСС 80 ударов и более</label>
+            <label><input type="radio" name="extraAfOption" value="hr_lt_80" /> ЧСС менее 80</label>
+          </div>
+          <label><input id="extra-cerebro" type="checkbox" /> Цереброваскулярная болезнь</label>
+          <label><input id="extra-pad" type="checkbox" /> Заболевания периферических артерий</label>
+          <label><input id="extra-copd" type="checkbox" /> Бронхиальная астма и/или ХОБЛ</label>
+          <label><input id="extra-osa" type="checkbox" /> Синдром обструктивного апноэ сна</label>
+          <label><input id="extra-resistant" type="checkbox" /> Резистентная АГ</label>
+          <label><input id="extra-pregnancy" type="checkbox" /> Беременность</label>
+          <div id="pregnancy-warning-inline" class="warning-inline" hidden>Рекомендуется срочно госпитализировать пациентку и расценивать состояние как гипертонический криз.</div>
+          <label id="extra-ed-wrap" hidden><input id="extra-ed" type="checkbox" /> Эректильная дисфункция</label>
+        </div>
+        <div>
+          <h3>Прием других лекарственных средств</h3>
+          <label id="drug-coc-wrap" hidden><input id="drug-coc" type="checkbox" /> КОК</label>
+          <label id="drug-mht-wrap" hidden><input id="drug-mht" type="checkbox" /> Менопаузальная гормональная терапия</label>
+          <label><input id="drug-onco" type="checkbox" /> Противоопухолевая терапия</label>
+          <div id="extra-onco-sub" class="nested" hidden>
+            <label><input type="radio" name="drugOncoOption" value="not_started" /> Терапия еще не начата</label>
+            <label><input type="radio" name="drugOncoOption" value="ongoing" /> Терапия проводится</label>
+          </div>
+        </div>
+        <div>
+          <h3>Другое</h3>
+          <div id="frailty-toggle-wrap" hidden>
+            <button type="button" class="button secondary" id="frailty-toggle">Рассчитать вероятность старческой астении</button>
+          </div>
+          <div id="frailty-panel" class="nested card-light" hidden>
+            <p>Ответьте на вопросы.</p>
+            <label class="frailty-question"><input type="checkbox" /> Похудели ли Вы на 5 кг и более за последние 6 месяцев?</label>
+            <label class="frailty-question"><input type="checkbox" /> Есть ли ограничения в повседневной жизни из-за снижения зрения или слуха?</label>
+            <label class="frailty-question"><input type="checkbox" /> Были ли падения или травмы, связанные с падением, за последний год?</label>
+            <label class="frailty-question"><input type="checkbox" /> Чувствуете ли Вы себя подавленным, грустным или встревоженным?</label>
+            <label class="frailty-question"><input type="checkbox" /> Есть ли проблемы с памятью, пониманием, ориентацией или планированием?</label>
+            <label class="frailty-question"><input type="checkbox" /> Страдаете ли Вы недержанием мочи?</label>
+            <label class="frailty-question"><input type="checkbox" /> Есть ли трудности в перемещении по дому или на улице?</label>
+            <div class="inline-actions">
+              <button type="button" class="button secondary" id="frailty-calc-btn">Рассчитать</button>
+              <button type="button" class="button ghost" id="frailty-reset-btn">Сбросить</button>
+            </div>
+            <p id="frailty-score" class="info-note" data-calculated="0"></p>
+          </div>
+
+          <div id="cha2-toggle-wrap" hidden class="top-gap">
+            <button type="button" class="button secondary" id="cha2-toggle">Рассчитать CHA2DS2-VASc</button>
+          </div>
+          <div id="cha2-panel" class="nested card-light" hidden>
+            <p>Отметьте факторы риска пациента.</p>
+            <label><input id="cha2-stroke" type="checkbox" /> Инсульт / ТИА / системная эмболия в анамнезе (2 балла)</label>
+            <label><input id="cha2-age75" type="checkbox" data-auto="1" disabled /> Возраст ≥75 лет (2 балла)</label>
+            <label><input id="cha2-htn" type="checkbox" /> АГ или прием АГП (1 балл)</label>
+            <label><input id="cha2-dm" type="checkbox" /> СД 1 или 2 типа (1 балл)</label>
+            <label><input id="cha2-hf" type="checkbox" /> Средняя или тяжелая ХСН (1 балл)</label>
+            <label><input id="cha2-vascular" type="checkbox" /> Сосудистое заболевание (1 балл)</label>
+            <label><input id="cha2-age6574" type="checkbox" data-auto="1" disabled /> Возраст 65–74 года (1 балл)</label>
+            <label><input id="cha2-female" type="checkbox" data-auto="1" disabled /> Женский пол (1 балл)</label>
+            <div class="inline-actions">
+              <button type="button" class="button secondary" id="cha2-calc-btn">Рассчитать</button>
+              <button type="button" class="button ghost" id="cha2-reset-btn">Сбросить</button>
+            </div>
+            <p id="cha2-result" class="info-note" data-calculated="0"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>4. Статус терапии</h2>
+      <div class="switcher">
+        <label><input type="radio" name="therapyMode" value="start" checked /> Старт терапии</label>
+        <label><input type="radio" name="therapyMode" value="adjust" /> Коррекция терапии</label>
+      </div>
+      <div id="correction-block" class="subcard" hidden>
+        <p>Отметьте классы антигипертензивных препаратов, которые пациент уже получает.</p>
+        <div id="therapy-class-chips" class="chip-grid"></div>
+        <label class="top-gap"><input id="target-not-achieved" type="checkbox" checked /> Целевой уровень АД не достигнут</label>
+      </div>
+    </section>
+
+    <div class="actions-row">
+      <button class="button" id="submit-btn">Назначить терапию</button>
+    </div>
+  </main>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
